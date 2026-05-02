@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import AdminRoute from '@/components/AdminRoute'
@@ -29,7 +29,7 @@ function StatusBadge({ status }: { status: Order['status'] }) {
     )
 }
 
-export default function AdminPage() {
+function AdminContent() {
     const searchParams = useSearchParams()
     const [orders, setOrders]     = useState<Order[]>([])
     const [products, setProducts] = useState<Product[]>([])
@@ -59,15 +59,13 @@ export default function AdminPage() {
     const handleDelete = async (productId: string) => {
         if (!confirm('Supprimer ce produit ?')) return
         await api.delete(`/api/products/${productId}`)
-        // Mise à jour locale — évite un rechargement complet de la page
         setProducts((prev) => prev.filter((p) => p._id !== productId))
     }
 
     return (
-        <AdminRoute>
-            <>
-            <PageHero compact title="Dashboard Admin" subtitle="Gérez vos commandes et votre catalogue produits." />
-            <main className="max-w-5xl mx-auto px-4 py-8">
+        <>
+        <PageHero compact title="Dashboard Admin" subtitle="Gérez vos commandes et votre catalogue produits." />
+        <main className="max-w-5xl mx-auto px-4 py-8">
                 <p className="text-sm text-slate-400 mb-6">
                     {orders.length} commande{orders.length > 1 ? 's' : ''} · {products.length} produit{products.length > 1 ? 's' : ''}
                 </p>
@@ -173,7 +171,16 @@ export default function AdminPage() {
                 )}
 
             </main>
-            </>
-        </AdminRoute>
+        </>
+    )
+}
+
+export default function AdminPage() {
+    return (
+        <Suspense fallback={<p className="text-center py-12 text-gray-400">Chargement...</p>}>
+            <AdminRoute>
+                <AdminContent />
+            </AdminRoute>
+        </Suspense>
     )
 }
