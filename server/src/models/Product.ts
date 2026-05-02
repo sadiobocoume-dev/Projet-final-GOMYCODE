@@ -56,4 +56,7 @@ const ProductSchema = new Schema<IProduct>(
     }
 )
 
+// Index composé : accélère les filtres par catégorie et par prix combinés
+ProductSchema.index({ category: 1, price: 1 })
+
 export default mongoose.model<IProduct>('Product', ProductSchema)
